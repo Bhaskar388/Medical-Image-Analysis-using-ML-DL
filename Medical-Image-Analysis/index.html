@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Medical Image Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <div class="header bg-blue-600 text-white text-center py-4 rounded">
+            <h1 class="text-2xl font-bold">Medical Image Analysis using ML and DL</h1>
+            <p class="text-lg">Under the Guidance of Manisha Patro Ma'am & Co-Advisor Susmita Mahato Ma'am</p>
+        </div>
+
+        <div class="students mt-4">
+            <h2 class="text-xl font-semibold">Submitted By</h2>
+            <div class="bg-white shadow-md rounded p-4 mt-2">
+                <p class="text-lg"><span class="font-bold">Student 1:</span> Illa Bhaskararao <span class="font-bold">ROLL NO.</span> CSE202110388</p>
+                <p class="text-lg"><span class="font-bold">Student 2:</span> Deeshanshi Sahu <span class="font-bold">ROLL NO.</span> CSE202117349</p>
+                <p class="text-lg"><span class="font-bold">Student 3:</span> Asharani Nayak <span class="font-bold">ROLL NO.</span> CSE202113347</p>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <button class="btn bg-cyan-400 text-white py-2 px-4 rounded" onclick="showModal()">View Project Details</button>
+        </div>
+
+        <div class="upload-section mt-8 text-center">
+            <h2 class="text-2xl font-semibold">Upload an Image to Predict the Disease</h2>
+            <div class="mt-4">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <input class="input-file border border-gray-300 p-2 rounded" id="fileInput" type="file" name="file" accept="image/*" />
+                    <button type="button" class="btn bg-blue-600 text-white py-2 px-4 rounded ml-2" onclick="uploadImage()">Predict</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Details Modal -->
+    <div class="modal" id="myModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">×</span>
+            <p>The primary goal is to develop efficient models capable of analyzing medical images, addressing challenges like noisy data, limited datasets, and model interpretability. A comparative analysis of ML and DL methods is conducted to determine the most suitable approaches for specific medical imaging tasks. This work aims to enhance diagnostic precision, reduce human error, and streamline healthcare processes.</p>
+        </div>
+    </div>
+
+    <!-- Analyzing Modal -->
+    <div class="modal" id="analyzeModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAnalyzeModal()">×</span>
+            <p>Analyzing the image...</p>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content text-center">
+            <span class="close" onclick="closeResultModal()">×</span>
+            <h2 class="text-xl font-semibold">Analysis Result</h2>
+            <img id="uploadedImagePreview" class="image-preview mt-4 max-w-xs mx-auto rounded border hidden" />
+            <p id="resultText" class="mt-4">Disease detected by the model:</p>
+        </div>
+    </div>
+
+    <script>
+        function showModal() {
+            document.getElementById("myModal").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("myModal").style.display = "none";
+        }
+
+        function uploadImage() {
+            var formData = new FormData(document.getElementById('uploadForm'));
+            var fileInput = document.getElementById('fileInput');
+            var uploadedImagePreview = document.getElementById('uploadedImagePreview');
+
+            if (fileInput.files && fileInput.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    uploadedImagePreview.src = e.target.result;
+                    uploadedImagePreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            }
+
+            document.getElementById("analyzeModal").style.display = "block";
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("analyzeModal").style.display = "none";
+                    document.getElementById("resultModal").style.display = "block";
+                    document.getElementById("resultText").innerText = "Disease detected by the model: " + data.predicted_class;
+                })
+                .catch(error => {
+                    document.getElementById("analyzeModal").style.display = "none";
+                    alert('Error analyzing image.');
+                    console.error('Error:', error);
+                });
+        }
+
+        function closeAnalyzeModal() {
+            document.getElementById("analyzeModal").style.display = "none";
+        }
+
+        function closeResultModal() {
+            document.getElementById("resultModal").style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            if (event.target == document.getElementById("myModal")) closeModal();
+            if (event.target == document.getElementById("analyzeModal")) closeAnalyzeModal();
+            if (event.target == document.getElementById("resultModal")) closeResultModal();
+        };
+    </script>
+
+</body>
+
+</html>
